@@ -11,14 +11,17 @@ namespace test_ssrs
         {
             var userName = Environment.GetEnvironmentVariable("Creds_UserName");
             var password = Environment.GetEnvironmentVariable("Creds_Password");
+            var reportUrl = Environment.GetEnvironmentVariable("SSRS_Url");
+            var ntlmDomain = Environment.GetEnvironmentVariable("NTLM_Domain");
+
             CredentialCache credentialCache = new CredentialCache();
             credentialCache.Add(
-                new Uri("https://beyondssrsdev.eastus.cloudapp.azure.com")
+                new Uri($"https://{ntlmDomain}")
                 , "NTLM"
                 , new NetworkCredential(
                     userName
                     , password
-                    , "beyondssrsdev.eastus.cloudapp.azure.com"));
+                    , ntlmDomain));
             using (var httpClientHandler = new HttpClientHandler() { Credentials = credentialCache })
             {
                 // Use ServerCertificateCustomValidationCallback with extreme caution.
@@ -27,8 +30,8 @@ namespace test_ssrs
                 using (var client = new HttpClient(httpClientHandler))
                 {
                     // Set up the call.
-                    var requestUri = new Uri("https://beyondssrsdev.eastus.cloudapp.azure.com/ReportServer/Pages/ReportViewer.aspx?%2fCompensation%2fPortfolioHealthbyDD&rs:Command=Render");
-                    var payload = "{\"DDEmail\": \"ken.tow@getbeyond.com\"}";
+                    var requestUri = new Uri(reportUrl);
+                    var payload = "{\"DDEmail\": \"john.doe@getbeyond.com\"}";
                     var content = new StringContent(payload, Encoding.UTF8, "application/json");
                     // Make the call.
                     var response = client.PostAsync(requestUri, content).Result;
